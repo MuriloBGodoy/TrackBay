@@ -1,0 +1,23 @@
+# Cada módulo tem o seu .gitignore (backend/, frontend/); este cobre a raiz e o
+# que nunca pode vazar para o repositório.
+
+# Credenciais — o service account do Firebase nunca é versionado (ver README)
+.env
+.env.local
+.env.*.local
+*serviceAccountKey*.json
+*.pem
+*.p12
+*.jks
+
+# Logs de execução dos servidores de desenvolvimento
+*.log
+logs/
+
+# Sistema operacional e editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp

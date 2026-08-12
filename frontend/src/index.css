@@ -1,0 +1,324 @@
+@import 'tailwindcss';
+
+/*
+ * ===== Design system Track Wheel — "Grafite" =====
+ *
+ * Dark premium monocromatico, no espirito do painel Park.Guard: superficies de
+ * grafite profundo, cartoes de vidro fosco, texto branco e UM unico acento — o
+ * proprio branco. Nada de cor; a hierarquia vem de luz, peso e contraste.
+ *
+ * A escala `tinta` e INVERTIDA em relacao ao tema claro original (50 = superficie
+ * escura, 900 = quase branco). Assim todo `bg-tinta-50 text-tinta-900` existente
+ * nas paginas flui para o dark sem reescrever cada tela.
+ *
+ * Tipografia: Space Grotesk (display, ar tecnico) + Manrope (corpo) +
+ * JetBrains Mono (placas, numeros de OS, cronometro).
+ *
+ * Mobile-first: alvos de toque >= 44px, area segura para notch/barra inferior.
+ */
+
+@theme {
+  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, ui-sans-serif,
+    system-ui, sans-serif;
+  --font-display: 'Space Grotesk', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Escala invertida: 50 = superficie escura de cartao, 900 = texto quase branco. */
+  --color-tinta-50: #17171a;
+  --color-tinta-100: #1c1c20;
+  --color-tinta-200: #242429;
+  --color-tinta-300: #303036;
+  --color-tinta-400: #47474f;
+  --color-tinta-500: #8b8b94;
+  --color-tinta-600: #adadb5;
+  --color-tinta-700: #d0d0d5;
+  --color-tinta-800: #e7e7ea;
+  --color-tinta-900: #f5f5f7;
+  --color-tinta-950: #ffffff;
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Superficies */
+  --tk-bg: #0a0a0c;
+  --tk-surface: #17171a;
+  --tk-surface-2: #1c1c20;
+  --tk-elevated: #202024;
+  --tk-border: rgba(255, 255, 255, 0.08);
+  --tk-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Texto */
+  --tk-text: #f5f5f7;
+  --tk-text-muted: #adadb5;
+  --tk-text-subtle: #8b8b94;
+
+  /* O acento e a propria luz. */
+  --tk-accent: #ffffff;
+  --tk-accent-soft: rgba(255, 255, 255, 0.08);
+
+  /* Sombras e brilhos */
+  --tk-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.3);
+  --tk-shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 16px 40px rgba(0, 0, 0, 0.35);
+  --tk-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6);
+  --tk-glow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 32px rgba(255, 255, 255, 0.08);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+body {
+  margin: 0;
+  /* Grafite profundo com um facho de luz fria no alto — o "estudio" do Park.Guard, sem cor. */
+  background:
+    radial-gradient(1100px 560px at 70% -12%, rgba(255, 255, 255, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 8% 112%, rgba(255, 255, 255, 0.035), transparent 62%),
+    var(--tk-bg);
+  background-attachment: fixed;
+  color: var(--tk-text);
+  font-family: var(--font-sans);
+  letter-spacing: -0.011em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+* {
+  min-width: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Evita o zoom automatico do iOS ao focar input: fonte < 16px dispara o zoom. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/*
+ * A lista aberta do <select> nao herda o tema: o navegador pinta o fundo com o
+ * branco do sistema e as opcoes ficam com a cor de texto clara — branco no
+ * branco. Definir as duas cores aqui resolve para todos os selects de uma vez.
+ */
+select option {
+  background-color: var(--tk-surface-2);
+  color: var(--tk-text);
+}
+
+::selection {
+  background: #ffffff;
+  color: #0a0a0c;
+}
+
+/* Foco visivel e consistente em todo elemento interativo */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+  h1,
+  h2,
+  h3,
+  p,
+  span,
+  button,
+  a {
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * Excecao a regra acima: a placa e um bloco unico. Deixar o texto quebrar
+   * em qualquer ponto transforma "BRA2E19" em "BRA2E / 19" e o mecanico
+   * perde o reconhecimento imediato. Vale para todo mono (codigo, numero da OS).
+   */
+  .font-mono {
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ===== Utilitarios ===== */
+
+@utility area-segura-inferior {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility toque {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Cartao padrao: grafite com borda de luz. */
+@utility tk-card {
+  background: linear-gradient(175deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 40%),
+    var(--tk-surface);
+  border: 1px solid var(--tk-border);
+  border-radius: 20px;
+  box-shadow: var(--tk-shadow-sm);
+}
+
+@utility tk-card-hover {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    border-color: var(--tk-border-strong);
+    box-shadow: var(--tk-shadow-md);
+    transform: translateY(-1px);
+  }
+}
+
+/* Vidro fosco: chrome flutuante (header, navegacao, barras). */
+@utility tk-glass {
+  background: rgba(18, 18, 21, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(1.1);
+  -webkit-backdrop-filter: blur(20px) saturate(1.1);
+}
+
+/* Painel-heroi: a ilha elevada com facho de luz, como o palco do carro no modelo. */
+@utility tk-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(480px 280px at 85% -18%, rgba(255, 255, 255, 0.1), transparent 62%),
+    radial-gradient(420px 260px at 8% 118%, rgba(255, 255, 255, 0.05), transparent 60%),
+    linear-gradient(165deg, #1e1e23, #121215);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: var(--tk-shadow-lg);
+  color: var(--tk-text);
+}
+
+/* Barra de rolagem discreta e consistente no shell */
+@utility tk-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tk-border-strong) transparent;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Tira a barra de rolagem de faixas com scroll horizontal (chips, filtros). */
+@utility sem-barra {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Aro girando devagar — so no heroi da landing, onde a marca e protagonista. */
+@keyframes tk-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility tk-gira {
+  animation: tk-gira 18s linear infinite;
+}
+
+/* Entrada suave (sobe + aparece). O atraso vem do style inline, para escalonar. */
+@keyframes tk-entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility tk-entra {
+  animation: tk-entra 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Malha tecnica de fundo: a "planta baixa" do pátio atras do heroi. */
+@utility tk-malha {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+/* Texto com degrade de luz — reservado a titulos de secao do marketing. */
+@utility tk-titulo-luz {
+  background: linear-gradient(180deg, #ffffff 15%, #9a9aa4 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Pulso do ponto "ao vivo" nas baias em atendimento. */
+@keyframes tk-pulso {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+@utility tk-pulso {
+  animation: tk-pulso 1.8s ease-in-out infinite;
+}

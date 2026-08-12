@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// Regras do Firestore do Track Wheel.
+//
+// Arquitetura: o app (front) NAO fala com o Firestore — ele chama a API, e o backend
+// acessa o banco com o Admin SDK, que ignora estas regras por design. Logo, tudo aqui
+// e defesa em profundidade: a chave de API web e publica, entao qualquer usuario logado
+// poderia tentar ler o banco direto com o proprio token. Estas regras barram isso.
+//
+// Postura:
+//   - Escrita pelo cliente: negada em todo lugar. Quem escreve e o backend, que valida
+//     regra de negocio (transicao de status, baixa de estoque, numero da OS).
+//   - Leitura: so o membro ativo daquela oficina, e so dentro do caminho dela.
+//   - Qualquer caminho nao declarado: negado.
+//
+// Modelo de dados: oficinas/{oficinaId}/{colecao}/{doc} + usuarios/{uid} na raiz
+// (o usuario e resolvido pelo uid ANTES de sabermos o tenant — e dele que sai o oficinaId).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function perfil() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
+    }
+
+    // Fail-closed: sem documento de usuario (ex.: convidado que nunca logou), nao e membro.
+    function membroDe(oficinaId) {
+      return autenticado()
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && perfil().oficinaId == oficinaId
+        && perfil().ativo == true;
+    }
+
+    // Cada um le apenas o proprio perfil. Convite, papel e desativacao passam pelo backend.
+    match /usuarios/{uid} {
+      allow read: if autenticado() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /oficinas/{oficinaId} {
+      allow read: if membroDe(oficinaId);
+      allow write: if false;
+
+      // clientes, veiculos, ordens, produtos, movimentacoes, fornecedores,
+      // templates, agendamentos, vendas — o isolamento vem do proprio caminho.
+      match /{colecao}/{documento} {
+        allow read: if membroDe(oficinaId);
+        allow write: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

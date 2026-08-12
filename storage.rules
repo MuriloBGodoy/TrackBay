@@ -1,0 +1,25 @@
+rules_version = '2';
+
+// Regras do Firebase Storage do Track Wheel (fotos do checklist e assinatura do cliente).
+//
+// Mesmo desenho do Firestore: o cliente nao fala com o Storage. O upload vai para a API
+// (POST /api/arquivos), o backend grava com o Admin SDK — que ignora estas regras — e
+// devolve a URL que fica salva na OS. Entao aqui negamos tudo: nenhum caminho e
+// alcancavel com o token do usuario, mesmo com a chave de API web em maos.
+//
+// Como a imagem e exibida depois: o backend grava um token de download no objeto e
+// devolve a URL tokenizada (mesmo modelo do getDownloadURL do SDK web). Essa URL e
+// impossivel de adivinhar, mas quem tiver o link ve a imagem, e ela nao expira — foi a
+// escolha consciente para que o link salvo na OS continue valendo daqui a anos. Se um dia
+// as fotos precisarem de acesso revogavel, troque por URL assinada com expiracao e passe
+// a guardar o caminho do objeto (nao a URL) no documento.
+//
+// Layout dos objetos: oficinas/{oficinaId}/ordens/{osId}/{arquivo}
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

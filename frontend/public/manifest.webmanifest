@@ -1,0 +1,44 @@
+{
+  "name": "Track Wheel — Gestão para oficinas",
+  "short_name": "Track Wheel",
+  "description": "Ordens de serviço, clientes, veículos e estoque para oficinas mecânicas.",
+  "id": "/",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icone.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova OS",
+      "url": "/app/ordens/nova"
+    },
+    {
+      "name": "Buscar veículo",
+      "url": "/app/veiculos"
+    }
+  ]
+}
