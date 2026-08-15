@@ -17,7 +17,7 @@ import java.util.List;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI trackWheelOpenAPI() {
+    public OpenAPI trackBayOpenAPI() {
         SecurityScheme bearer = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
@@ -27,7 +27,7 @@ public class OpenApiConfig {
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Track Wheel API")
+                        .title("Track Bay API")
                         .version("0.0.1")
                         .description("""
                                 SaaS de gestao para oficinas mecanicas.
@@ -38,7 +38,7 @@ public class OpenApiConfig {
                                 Multi-tenant: toda entidade pertence a uma oficina e o tenant e sempre
                                 derivado do token — nunca de dado enviado pelo cliente.
                                 """)
-                        .contact(new Contact().name("Track Wheel")))
+                        .contact(new Contact().name("Track Bay")))
                 .servers(List.of(new Server().url("http://localhost:8080").description("Local")))
                 .components(new Components().addSecuritySchemes("bearerAuth", bearer))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));

@@ -17,7 +17,7 @@ import {
 export const MODO_DEV = !import.meta.env.VITE_FIREBASE_API_KEY
 
 export const USUARIO_DEV =
-  import.meta.env.VITE_DEV_USER || 'dono@oficinatrackwheel.com.br'
+  import.meta.env.VITE_DEV_USER || 'dono@oficinatrackbay.com.br'
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

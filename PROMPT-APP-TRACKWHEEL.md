@@ -7,7 +7,7 @@
 
 ## 1. Contexto e objetivo
 
-Quero construir um **SaaS de gestão para oficinas mecânicas** que será vendido por assinatura para oficinas da minha região. Chamado Track Wheel
+Quero construir um **SaaS de gestão para oficinas mecânicas** que será vendido por assinatura para oficinas da minha região. Chamado Track Bay
 
 O diferencial do produto: **os campos do cadastro de serviço se adaptam ao ramo da oficina**. Uma oficina de radiador vê opções de serviço de radiador; uma de suspensão vê opções de suspensão; uma funilaria vê outras. O núcleo (cliente, veículo, ordem de serviço, pagamento) é sempre o mesmo — o que muda é o **catálogo de campos dinâmicos** carregado conforme o ramo configurado no onboarding.
 

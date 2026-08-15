@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Regras do Firebase Storage do Track Wheel (fotos do checklist e assinatura do cliente).
+// Regras do Firebase Storage do Track Bay (fotos do checklist e assinatura do cliente).
 //
 // Mesmo desenho do Firestore: o cliente nao fala com o Storage. O upload vai para a API
 // (POST /api/arquivos), o backend grava com o Admin SDK — que ignora estas regras — e

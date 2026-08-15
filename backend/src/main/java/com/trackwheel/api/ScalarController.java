@@ -19,7 +19,7 @@ public class ScalarController {
                 <!doctype html>
                 <html>
                   <head>
-                    <title>Track Wheel API</title>
+                    <title>Track Bay API</title>
                     <meta charset="utf-8" />
                     <meta name="viewport" content="width=device-width, initial-scale=1" />
                     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#128295;</text></svg>" />
@@ -32,7 +32,7 @@ public class ScalarController {
                         layout: 'modern',
                         hideDownloadButton: false,
                         searchHotKey: 'k',
-                        metaData: { title: 'Track Wheel API' }
+                        metaData: { title: 'Track Bay API' }
                       };
                       document.getElementById('api-reference')
                         .dataset.configuration = JSON.stringify(configuration);

@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Regras do Firestore do Track Wheel.
+// Regras do Firestore do Track Bay.
 //
 // Arquitetura: o app (front) NAO fala com o Firestore — ele chama a API, e o backend
 // acessa o banco com o Admin SDK, que ignora estas regras por design. Logo, tudo aqui

@@ -23,7 +23,7 @@ public class HealthController {
     public Map<String, Object> health() {
         return Map.of(
                 "status", "UP",
-                "app", "Track Wheel",
+                "app", "Track Bay",
                 "perfil", perfil,
                 "em", Instant.now().toString()
         );

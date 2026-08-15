@@ -1,6 +1,6 @@
 {
-  "name": "Track Wheel — Gestão para oficinas",
-  "short_name": "Track Wheel",
+  "name": "Track Bay — Gestão para oficinas",
+  "short_name": "Track Bay",
   "description": "Ordens de serviço, clientes, veículos e estoque para oficinas mecânicas.",
   "id": "/",
   "start_url": "/app",

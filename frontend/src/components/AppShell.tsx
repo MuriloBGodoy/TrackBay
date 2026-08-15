@@ -146,7 +146,7 @@ function BarraLateral({
           <MarcaSimbolo tamanho={34} />
           {!colapsada && (
             <span className="font-display text-[15px] leading-none font-bold tracking-tight whitespace-nowrap text-tinta-900">
-              Track<span className="text-tinta-500">Wheel</span>
+              Track<span className="text-tinta-500">Bay</span>
             </span>
           )}
         </NavLink>
@@ -233,7 +233,7 @@ function BarraTopo() {
         <NavLink to="/app" end className="flex shrink-0 items-center gap-2.5 lg:hidden">
           <MarcaSimbolo tamanho={32} />
           <span className="hidden font-display text-[15px] leading-none font-bold tracking-tight text-tinta-900 sm:inline">
-            Track<span className="text-tinta-500">Wheel</span>
+            Track<span className="text-tinta-500">Bay</span>
           </span>
         </NavLink>
 

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
- * ===== Design system Track Wheel — "Grafite" =====
+ * ===== Design system Track Bay — "Grafite" =====
  *
  * Dark premium monocromatico, no espirito do painel Park.Guard: superficies de
  * grafite profundo, cartoes de vidro fosco, texto branco e UM unico acento — o
@@ -261,17 +261,6 @@ select option {
   &::-webkit-scrollbar {
     display: none;
   }
-}
-
-/* Aro girando devagar — so no heroi da landing, onde a marca e protagonista. */
-@keyframes tk-gira {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@utility tk-gira {
-  animation: tk-gira 18s linear infinite;
 }
 
 /* Entrada suave (sobe + aparece). O atraso vem do style inline, para escalonar. */

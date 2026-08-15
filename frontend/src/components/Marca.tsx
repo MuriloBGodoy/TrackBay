@@ -1,31 +1,47 @@
 import { useId } from 'react'
-import wordmark from '../assets/wordmark-trackwheel.png'
+import arte from '../assets/logo-trackbay.webp'
 import { cx } from './ui'
 
 /**
- * ===== Marca Track Wheel =====
+ * ===== Marca Track Bay =====
  *
- * O logo original e uma arte em pincel: pneu em perspectiva, raios de liga e o
- * monograma "TW" pintado por cima. Aqui ele vira duas pecas independentes:
+ * Duas pecas, cada uma para um tamanho:
  *
- * - `MarcaSimbolo` — o pneu visto de frente, redesenhado em vetor. Precisa
- *   funcionar a 20px na barra lateral e a 240px no heroi, entao a geometria e
- *   limpa: banda de rodagem, aro prata, cinco raios discretos e o TW por cima.
- *   Monocromatico por natureza — nenhuma cor, so luz.
- * - `MarcaTexto` — o letreiro em pincel recortado da propria arte do dono e
- *   passado para branco com transparencia, entao ele mantem a textura da
- *   pincelada sobre o grafite.
+ * - `MarcaArte` — a arte oficial (chaves cruzadas, pneu e o letreiro). Vai onde
+ *   ha espaco de sobra: heroi da landing e painel do login. E raster e cheia de
+ *   detalhe, entao nao desce abaixo de ~150px de largura.
+ * - `MarcaSimbolo` — o portico da baia, vetorial. E o que sobrevive a 32px: barra
+ *   lateral, cabecalho, favicon e icone do PWA. O nome e o desenho dizem a mesma
+ *   coisa: a *baia*, o box onde o carro entra para ser atendido. Nada gira.
+ *
+ * A arte original (`trackbaylogo.png`, na raiz) e escura sobre cinza claro. O
+ * asset daqui e ela recortada, com o fundo removido e a **luminancia invertida** —
+ * sem inverter, o letreiro quase preto sumiria no grafite.
+ *
+ * A geometria do simbolo vive tambem em `public/icone.svg` (favicon e PWA) — se
+ * um mudar, mude o outro. O SVG publico e deliberadamente sem texto: os PNGs do
+ * manifesto sao renderizados a partir dele, fora do navegador, onde webfont nao
+ * carrega.
  */
+
+/** A arte oficial. Escala pela largura — o chamador passa `w-72`, `w-52`... */
+export function MarcaArte({ className }: { className?: string }) {
+  return (
+    <img
+      src={arte}
+      alt="Track Bay"
+      className={cx('block h-auto select-none', className)}
+      draggable={false}
+    />
+  )
+}
 
 export function MarcaSimbolo({
   tamanho = 32,
   className,
-  animado = false,
 }: {
   tamanho?: number
   className?: string
-  /** Gira o aro lentamente — usado so no heroi da landing. */
-  animado?: boolean
 }) {
   // Gradientes precisam de id unico: dois simbolos na mesma pagina senao
   // compartilham a definicao e o segundo herda a escala do primeiro.
@@ -38,83 +54,90 @@ export function MarcaSimbolo({
       height={tamanho}
       className={cx('shrink-0', className)}
       role="img"
-      aria-label="Track Wheel"
+      aria-label="Track Bay"
     >
       <defs>
-        <radialGradient id={`${id}-aro`} cx="38%" cy="32%" r="72%">
+        <linearGradient id={`${id}-placa`} x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stopColor="#26262d" />
+          <stop offset="55%" stopColor="#17171b" />
+          <stop offset="100%" stopColor="#0d0d10" />
+        </linearGradient>
+        <radialGradient id={`${id}-metal`} cx="36%" cy="22%" r="78%">
           <stop offset="0%" stopColor="#ffffff" />
           <stop offset="45%" stopColor="#c9c9d0" />
           <stop offset="100%" stopColor="#5b5b64" />
         </radialGradient>
-        <linearGradient id={`${id}-pneu`} x1="0.15" y1="0" x2="0.85" y2="1">
-          <stop offset="0%" stopColor="#3a3a42" />
-          <stop offset="55%" stopColor="#1d1d21" />
-          <stop offset="100%" stopColor="#0d0d10" />
+        <linearGradient id={`${id}-carro`} x1="0.2" y1="0" x2="0.8" y2="1">
+          <stop offset="0%" stopColor="#6a6a76" />
+          <stop offset="100%" stopColor="#30303a" />
+        </linearGradient>
+        {/* O piso acende no meio e some nas pontas — o facho do box. */}
+        <linearGradient id={`${id}-piso`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="50%" stopColor="#ffffff" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
       </defs>
 
-      {/* Pneu */}
-      <circle cx="32" cy="32" r="31" fill={`url(#${id}-pneu)`} />
-      {/* Banda de rodagem: o tracejado desenha os blocos do desenho do pneu. */}
-      <circle
-        cx="32"
-        cy="32"
-        r="27.4"
+      {/* Placa: da presenca em qualquer fundo e resolve o contraste do favicon. */}
+      <rect x="1" y="1" width="62" height="62" rx="15" fill={`url(#${id}-placa)`} />
+      <rect
+        x="1"
+        y="1"
+        width="62"
+        height="62"
+        rx="15"
         fill="none"
-        stroke="#08080a"
-        strokeWidth="4.4"
-        strokeDasharray="3.4 3.6"
-        opacity="0.75"
+        stroke="rgba(255,255,255,0.14)"
+        strokeWidth="1"
       />
-      <circle cx="32" cy="32" r="24.6" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
 
-      {/* Aro de liga */}
-      <g className={animado ? 'tk-gira' : undefined} style={{ transformOrigin: '32px 32px' }}>
-        <circle cx="32" cy="32" r="22.6" fill={`url(#${id}-aro)`} />
-        <circle cx="32" cy="32" r="19.8" fill="#15151a" />
-        {/* Cinco raios, discretos: a 20px eles viram textura, nao ruido. */}
-        <g fill={`url(#${id}-aro)`} opacity="0.34">
-          {[0, 72, 144, 216, 288].map((angulo) => (
-            <path
-              key={angulo}
-              d="M32 26.5 L36.4 13.4 Q32 11.6 27.6 13.4 Z"
-              transform={`rotate(${angulo} 32 32)`}
-            />
-          ))}
-        </g>
-        <circle cx="32" cy="32" r="3.6" fill={`url(#${id}-aro)`} opacity="0.5" />
+      {/* Vao escuro: o fundo do box, atras de tudo que esta dentro dele. */}
+      <path
+        d="M15.2 50 L15.2 28 Q15.2 20.2 23 20.2 L41 20.2 Q48.8 20.2 48.8 28 L48.8 50 Z"
+        fill="#08080a"
+      />
+
+      {/* O veiculo, de frente. A cabine e trapezio, nao retangulo: e o que faz
+          ler carro em vez de caixa. As rodas tocam o piso; o corpo cobre o topo
+          delas, entao so o pneu aparece embaixo. */}
+      <g fill="#2e2e37">
+        <rect x="19.8" y="43.5" width="6" height="6.5" rx="1.6" />
+        <rect x="38.2" y="43.5" width="6" height="6.5" rx="1.6" />
+      </g>
+      <path
+        d="M22.8 39 L25.4 31 Q26 29.2 28 29.2 L36 29.2 Q38 29.2 38.6 31 L41.2 39 Z"
+        fill={`url(#${id}-carro)`}
+      />
+      <path
+        d="M25 37.2 L26.9 31.9 Q27.2 31 28.3 31 L35.7 31 Q36.8 31 37.1 31.9 L39 37.2 Z"
+        fill="#0d0d12"
+      />
+      <rect x="18.5" y="37.5" width="27" height="9" rx="3" fill={`url(#${id}-carro)`} />
+      <rect x="21.5" y="43.4" width="21" height="2" rx="1" fill="#16161c" opacity="0.75" />
+      <g fill="#ffffff" opacity="0.92">
+        <rect x="20.5" y="39.8" width="5.2" height="2.6" rx="1.3" />
+        <rect x="38.3" y="39.8" width="5.2" height="2.6" rx="1.3" />
       </g>
 
-      {/* Monograma: branco com contorno escuro, como na arte pintada. */}
-      <text
-        x="32"
-        y="33.4"
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontFamily="'Space Grotesk', 'Segoe UI', sans-serif"
-        fontSize="21"
-        fontWeight="700"
-        letterSpacing="-2"
-        fill="#ffffff"
-        stroke="#0b0b0e"
-        strokeWidth="2.6"
-        paintOrder="stroke"
-        transform="skewX(-9) translate(5.3 0)"
-      >
-        TW
-      </text>
+      {/* Portico: moldura de metal, desenhada como recorte (evenodd). Ombro
+          arredondado em vez de meia-lua — porta de box, nao arco romano. */}
+      <path
+        d="M10 50 L10 28 Q10 15 23 15 L41 15 Q54 15 54 28 L54 50 Z
+           M15.2 50 L15.2 28 Q15.2 20.2 23 20.2 L41 20.2 Q48.8 20.2 48.8 28 L48.8 50 Z"
+        fillRule="evenodd"
+        fill={`url(#${id}-metal)`}
+      />
+
+      {/* Piso do box: passa por baixo do portico e vaza para os lados. */}
+      <rect x="6" y="50" width="52" height="2.8" rx="1.4" fill={`url(#${id}-piso)`} />
     </svg>
   )
 }
 
-/** O letreiro em pincel, em duas linhas, como no logo original. */
-export function MarcaTexto({ className }: { className?: string }) {
-  return <img src={wordmark} alt="Track Wheel" className={cx('select-none', className)} />
-}
-
 /**
  * Assinatura horizontal: simbolo + nome tipografico. E o que vai na barra
- * lateral e no cabecalho — o letreiro em pincel e alto demais para uma barra.
+ * lateral e no cabecalho — o letreiro empilhado e alto demais para uma barra.
  */
 export function MarcaHorizontal({
   tamanho = 32,
@@ -130,7 +153,7 @@ export function MarcaHorizontal({
       <MarcaSimbolo tamanho={tamanho} />
       {!ocultarTexto && (
         <span className="font-display text-[15px] leading-none font-bold tracking-tight whitespace-nowrap text-tinta-900">
-          Track<span className="text-tinta-500">Wheel</span>
+          Track<span className="text-tinta-500">Bay</span>
         </span>
       )}
     </span>

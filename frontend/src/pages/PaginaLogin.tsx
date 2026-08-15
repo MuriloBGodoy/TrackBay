@@ -3,7 +3,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, GoogleLogo } from '@phosphor-icons/react'
 import { useAuth } from '../auth/AuthContext'
 import { Botao, ErroBox } from '../components/ui'
-import { MarcaSimbolo, MarcaTexto } from '../components/Marca'
+import { MarcaArte } from '../components/Marca'
 
 const DESTAQUES = [
   'Ordem de serviço no celular, do orçamento à entrega',
@@ -51,7 +51,7 @@ export function PaginaLogin() {
             </span>
 
             <div>
-              <MarcaTexto className="mb-6 w-52 max-w-full" />
+              <MarcaArte className="mb-6 w-60 max-w-full" />
               <p className="max-w-sm text-sm leading-relaxed text-tinta-600">
                 O carro entra, a OS abre e ele ganha uma baia no pátio. Tudo o que a oficina faz no
                 dia, registrado sem papel.
@@ -69,10 +69,11 @@ export function PaginaLogin() {
           </aside>
 
           <div className="flex flex-col justify-center gap-6 p-8 sm:p-10">
-            {/* O painel-heroi some abaixo de lg; sem isto o celular ficaria sem marca. */}
-            <div className="flex flex-col items-center gap-2.5 lg:hidden">
-              <MarcaSimbolo tamanho={56} />
-              <MarcaTexto className="w-28" />
+            {/* O painel-heroi some abaixo de lg; sem isto o celular ficaria sem
+                marca. A arte vai sozinha: ela ja traz simbolo e letreiro, e a
+                28 de largura nao se leria. */}
+            <div className="flex justify-center lg:hidden">
+              <MarcaArte className="w-44" />
             </div>
 
             <div className="text-center lg:text-left">

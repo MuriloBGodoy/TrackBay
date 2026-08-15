@@ -14,7 +14,7 @@
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>trackwheel-backend</name>
-	<description>Track Wheel - SaaS de gestao para oficinas</description>
+	<description>Track Bay - SaaS de gestao para oficinas</description>
 
 	<properties>
 		<java.version>21</java.version>

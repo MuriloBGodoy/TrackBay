@@ -332,7 +332,7 @@ public class OrdemServicoPdf {
 
     private void rodape(Document doc) {
         Paragraph rodape = new Paragraph(
-                "Documento gerado em " + DATA_HORA.format(Instant.now()) + " · Track Wheel", F_MIUDO);
+                "Documento gerado em " + DATA_HORA.format(Instant.now()) + " · Track Bay", F_MIUDO);
         rodape.setSpacingBefore(24);
         rodape.setAlignment(Element.ALIGN_CENTER);
         doc.add(rodape);

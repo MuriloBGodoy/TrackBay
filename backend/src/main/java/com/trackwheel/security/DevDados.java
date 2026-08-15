@@ -4,7 +4,7 @@ package com.trackwheel.security;
 public final class DevDados {
 
     public static final String UID_DONO = "dev-uid-owner";
-    public static final String EMAIL_DONO = "dono@oficinatrackwheel.com.br";
+    public static final String EMAIL_DONO = "dono@oficinatrackbay.com.br";
 
     private DevDados() {
     }

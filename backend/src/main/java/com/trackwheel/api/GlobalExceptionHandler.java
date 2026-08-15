@@ -25,7 +25,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private static final String BASE_TIPO = "https://trackwheel.app/erros/";
+    private static final String BASE_TIPO = "https://trackbay.app/erros/";
 
     @ExceptionHandler(RegraNegocioException.class)
     public ProblemDetail regraNegocio(RegraNegocioException e, HttpServletRequest req) {
