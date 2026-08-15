@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { Carregando } from './components/ui'
@@ -9,8 +9,13 @@ import { PaginaLogin } from './pages/PaginaLogin'
 /*
  * A vitrine publica e o login vem no pacote inicial — sao a porta de entrada.
  * O app logado e tudo o que ele arrasta (motor de campos, graficos, telas de
- * cadastro) so baixa depois que alguem realmente entra.
+ * cadastro) so baixa depois que alguem realmente entra. "Como funciona" tambem
+ * e publica, mas fica fora do pacote inicial: quem so quer entrar nao paga por
+ * ela.
  */
+const PaginaComoFunciona = lazy(() =>
+  import('./pages/PaginaComoFunciona').then((m) => ({ default: m.PaginaComoFunciona })),
+)
 const AppShell = lazy(() => import('./components/AppShell').then((m) => ({ default: m.AppShell })))
 const PaginaOnboarding = lazy(() =>
   import('./pages/PaginaOnboarding').then((m) => ({ default: m.PaginaOnboarding })),
@@ -54,6 +59,22 @@ const queryClient = new QueryClient({
   },
 })
 
+/**
+ * Troca de rota comeca no topo. Sem isto, sair do rodape da home para "Como
+ * funciona" abriria a pagina nova ja rolada ate o fim. Ancora (#secao) e a
+ * excecao: ali o alvo e o proprio destino.
+ */
+function RolarAoTopo() {
+  const { pathname, hash } = useLocation()
+
+  useEffect(() => {
+    if (hash) return
+    window.scrollTo(0, 0)
+  }, [pathname, hash])
+
+  return null
+}
+
 /** Guarda de rota: sem login vai para o login; sem oficina, para o onboarding. */
 function Protegido() {
   const { sessao, carregando, modoDev, usuarioFirebase } = useAuth()
@@ -78,6 +99,7 @@ function Rotas() {
   return (
     <Routes>
       <Route path="/" element={<PaginaHome />} />
+      <Route path="/como-funciona" element={<PaginaComoFunciona />} />
       <Route path="/login" element={<PaginaLogin />} />
       <Route path="/onboarding" element={<PaginaOnboarding />} />
 
@@ -103,6 +125,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
+          <RolarAoTopo />
           <Suspense fallback={<Carregando />}>
             <Rotas />
           </Suspense>
