@@ -71,7 +71,7 @@ export function PaginaOnboarding() {
             <Input
               value={nomeFantasia}
               onChange={(e) => setNomeFantasia(e.target.value)}
-              placeholder="Ex.: Radiadores do Zé"
+              placeholder="Ex.: Oficina do Zé"
               autoFocus
             />
           </Campo>

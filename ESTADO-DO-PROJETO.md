@@ -1,4 +1,4 @@
-# Estado do projeto — Track Wheel
+# Estado do projeto — Track Bay
 
 > Anotação de handoff. Última sessão: **16/07/2026**.
 > Leia junto com o `README.md` (que tem o passo a passo de rodar e configurar o Firebase).
@@ -35,7 +35,7 @@ cd frontend && npm run dev
 
 Não precisa de Firebase nem de login: sobe em modo dev com a oficina já populada.
 
-A pasta já foi renomeada para `D:\Projects\TrackWheel` — aquela pendência morreu. Sobrou só um
+A pasta já foi renomeada para `D:\Projects\TrackBay` — aquela pendência morreu. Sobrou só um
 detalhe cosmético: `.claude/settings.local.json` ainda guarda permissões de comandos antigos citando
 `com.tork`. É histórico, não afeta nada.
 
@@ -132,9 +132,15 @@ hierarquia vem de luz, peso e contraste, não de cor.
   números de OS, cronômetro). Inter/Sora saíram no redesenho.
 - Ícones: **@phosphor-icons/react** (peso `fill` no estado ativo, `regular` no resto).
   `lucide-react` foi desinstalado.
-- Marca: `Marca` em `components/Layout.tsx` é o selo SVG do pneu com monograma "TW", fiel ao
-  logo oficial (`src/assets/marca-trackwheel.png`, usado no painel do login). O favicon
-  (`public/icone.svg`) segue o mesmo desenho.
+- Marca: duas peças em `components/Marca.tsx`. `MarcaArte` é a arte oficial (chaves cruzadas + pneu +
+  letreiro), usada no herói da landing e no login; `MarcaSimbolo` é o pórtico da baia em SVG — placa
+  de grafite, arco de metal e o veículo no vão —, usado onde a arte não caberia: sidebar, cabeçalho,
+  favicon (`public/icone.svg`) e ícones do PWA. Os dois substituíram o selo do pneu com monograma
+  "TW" na virada para Track Bay (a roda girava no herói; saiu junto com o utilitário `tk-gira`).
+  O asset (`src/assets/logo-trackbay.webp`) vem de `trackbaylogo.png` recortado, com o fundo tirado
+  e a **luminância invertida** — a arte é escura sobre cinza claro e sumiria no grafite.
+  Os PNGs antigos em `src/assets/` (`marca-trackwheel.png`, `wordmark-trackwheel.png`) ficaram
+  órfãos — nada mais importa eles.
 - Utilitários novos: `tk-glass` (chrome de vidro), `tk-hero` (painel-heroi com facho de luz),
   `tk-pulso` (ponto "ao vivo").
 - Dashboard: **Pátio da oficina** — grade de baias no estilo estacionamento (carro na baia = OS

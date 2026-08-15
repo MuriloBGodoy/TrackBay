@@ -1,16 +1,40 @@
 /** Espelha o dominio do backend (com.trackwheel.domain.model). */
 
+/** Mesma ordem do enum Ramo do backend — do mais comum ao mais especializado. */
 export type Ramo =
-  | 'RADIADOR'
   | 'MECANICA_GERAL'
-  | 'FUNILARIA_PINTURA'
-  | 'ELETRICA'
   | 'SUSPENSAO_FREIOS'
-  | 'AR_CONDICIONADO'
   | 'TROCA_OLEO'
-  | 'PNEUS_ALINHAMENTO'
   | 'INJECAO_ELETRONICA'
+  | 'ELETRICA'
+  | 'AR_CONDICIONADO'
+  | 'PNEUS_ALINHAMENTO'
+  | 'FUNILARIA_PINTURA'
+  | 'RADIADOR'
   | 'OUTRO'
+
+/** O que entrou na oficina: o carro, ou só a peça para manutenção. */
+export type TipoObjeto = 'VEICULO' | 'PECA'
+
+/** Onde o objeto está fisicamente. OUTRO exige texto livre dizendo onde. */
+export type LocalOficina =
+  | 'PATIO'
+  | 'BOX'
+  | 'ELEVADOR'
+  | 'DUCHA'
+  | 'TESTE'
+  | 'EXTERNO'
+  | 'OUTRO'
+
+export interface MovimentacaoLocal {
+  de?: LocalOficina
+  deDetalhe?: string
+  para: LocalOficina
+  paraDetalhe?: string
+  autorId?: string
+  autorNome?: string
+  em: string
+}
 
 export type Papel = 'OWNER' | 'MANAGER' | 'ATTENDANT' | 'MECHANIC'
 
@@ -251,10 +275,20 @@ export interface OrdemServico {
   numero: string
   clienteId: string
   clienteNome?: string
-  veiculoId: string
+  /** VEICULO tem placa; PECA avulsa tem só `objetoDescricao`. */
+  tipoObjeto: TipoObjeto
+  /** Vazio quando a OS é de peça avulsa. */
+  veiculoId?: string
   veiculoPlaca?: string
   veiculoDescricao?: string
+  objetoDescricao?: string
   kmEntrada?: number
+  /** Onde o objeto está agora. Eixo independente do status. */
+  local?: LocalOficina
+  /** Só preenchido quando `local` é OUTRO — é o nome que a oficina deu ao canto. */
+  localDetalhe?: string
+  localDesde?: string
+  historicoLocal?: MovimentacaoLocal[]
   status: StatusOS
   historicoStatus?: TransicaoStatus[]
   dataAbertura: string

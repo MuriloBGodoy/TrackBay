@@ -2,6 +2,7 @@ import { api } from './client'
 import type {
   Agendamento,
   Cliente,
+  LocalOficina,
   MovimentacaoEstoque,
   OrdemServico,
   Oficina,
@@ -57,6 +58,13 @@ export const ordensApi = {
     api.put<OrdemServico>(`/ordens/${id}`, os).then((r) => r.data),
   mudarStatus: (id: string, status: StatusOS, observacao?: string) =>
     api.post<OrdemServico>(`/ordens/${id}/status`, { status, observacao }).then((r) => r.data),
+  /** Move o objeto de lugar. Com OUTRO, `detalhe` é obrigatório. */
+  moverLocal: (id: string, local: LocalOficina, detalhe?: string) =>
+    api.post<OrdemServico>(`/ordens/${id}/local`, { local, detalhe }).then((r) => r.data),
+  locais: () =>
+    api
+      .get<{ valor: LocalOficina; rotulo: string; exigeDetalhe: boolean }[]>('/ordens/locais')
+      .then((r) => r.data),
   aprovar: (id: string, assinaturaUrl?: string) =>
     api.post<OrdemServico>(`/ordens/${id}/aprovar`, { assinaturaUrl }).then((r) => r.data),
   transicoes: (id: string) =>

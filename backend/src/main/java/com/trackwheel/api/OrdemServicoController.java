@@ -1,5 +1,6 @@
 package com.trackwheel.api;
 
+import com.trackwheel.domain.model.LocalOficina;
 import com.trackwheel.domain.model.Oficina;
 import com.trackwheel.domain.model.OrdemServico;
 import com.trackwheel.domain.model.StatusOS;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -94,6 +96,31 @@ public class OrdemServicoController {
     }
 
     public record MudancaStatus(StatusOS status, String observacao) {
+    }
+
+    @PostMapping("/{id}/local")
+    @Operation(summary = "Move o objeto de lugar na oficina",
+            description = "Patio, box, elevador, ducha... Com OUTRO, mande tambem o detalhe dizendo "
+                    + "onde. Status e lugar sao eixos independentes: mover nao muda a etapa do "
+                    + "trabalho. Cada movimentacao grava quem moveu e quando.")
+    public OrdemServico moverLocal(@PathVariable String id, @RequestBody MudancaLocal corpo) {
+        return service.moverLocal(ContextoTenant.oficinaId(), id, corpo.local(),
+                corpo.detalhe(), ContextoTenant.usuario());
+    }
+
+    public record MudancaLocal(LocalOficina local, String detalhe) {
+    }
+
+    @GetMapping("/locais")
+    @Operation(summary = "Lugares possiveis na oficina",
+            description = "Alimenta o select da tela. OUTRO exige texto livre dizendo onde.")
+    public List<Map<String, Object>> locais() {
+        return Arrays.stream(LocalOficina.values())
+                .map(l -> Map.<String, Object>of(
+                        "valor", l.name(),
+                        "rotulo", l.getRotulo(),
+                        "exigeDetalhe", l.exigeDetalhe()))
+                .toList();
     }
 
     @PostMapping("/{id}/aprovar")

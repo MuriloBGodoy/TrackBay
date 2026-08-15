@@ -18,10 +18,21 @@ public class OrdemServico {
     private String numero;
     private String clienteId;
     private String clienteNome;
+
+    /** VEICULO (com placa) ou PECA avulsa (so com descricao). */
+    private TipoObjeto tipoObjeto = TipoObjeto.VEICULO;
     private String veiculoId;
     private String veiculoPlaca;
     private String veiculoDescricao;
+    /** O que entrou, quando nao e um veiculo. Ex.: "Radiador Gol G5". */
+    private String objetoDescricao;
     private Integer kmEntrada;
+
+    /** Onde o objeto esta agora, e desde quando. */
+    private LocalOficina local = LocalOficina.PATIO;
+    private String localDetalhe;
+    private Instant localDesde = Instant.now();
+    private List<MovimentacaoLocal> historicoLocal = new ArrayList<>();
 
     private StatusOS status = StatusOS.ORCAMENTO;
     private List<TransicaoStatus> historicoStatus = new ArrayList<>();
@@ -63,6 +74,12 @@ public class OrdemServico {
     /** Registro auditavel de cada mudanca de status. */
     public record TransicaoStatus(StatusOS de, StatusOS para, String autorId, String autorNome,
                                   Instant em, String observacao) {
+    }
+
+    /** Registro auditavel de cada mudanca de lugar — quem moveu, de onde, quando. */
+    public record MovimentacaoLocal(LocalOficina de, String deDetalhe,
+                                    LocalOficina para, String paraDetalhe,
+                                    String autorId, String autorNome, Instant em) {
     }
 
     /** Estado do veiculo na entrada, com fotos — protege a oficina em disputa. */
@@ -141,6 +158,56 @@ public class OrdemServico {
      *
      * @throws IllegalStateException se a transicao nao for permitida a partir do status atual
      */
+    /**
+     * Move o objeto de lugar, registrando quem moveu e quando. Mover para o mesmo
+     * lugar (com o mesmo detalhe) e no-op: nao suja o historico.
+     *
+     * @throws IllegalArgumentException se OUTRO vier sem dizer onde
+     */
+    public void moverPara(LocalOficina destino, String detalhe, String autorId, String autorNome) {
+        if (destino == null) {
+            throw new IllegalArgumentException("Local de destino obrigatorio");
+        }
+        String detalheLimpo = detalhe == null || detalhe.isBlank() ? null : detalhe.trim();
+        if (destino.exigeDetalhe() && detalheLimpo == null) {
+            throw new IllegalArgumentException("Diga onde o veiculo esta quando escolher Outro");
+        }
+        if (!destino.exigeDetalhe()) {
+            detalheLimpo = null;
+        }
+        if (destino == this.local && java.util.Objects.equals(detalheLimpo, this.localDetalhe)) {
+            return;
+        }
+
+        historicoLocal.add(new MovimentacaoLocal(this.local, this.localDetalhe,
+                destino, detalheLimpo, autorId, autorNome, Instant.now()));
+        this.local = destino;
+        this.localDetalhe = detalheLimpo;
+        this.localDesde = Instant.now();
+        this.atualizadoPor = autorId;
+        this.atualizadoEm = Instant.now();
+    }
+
+    /** Onde esta, em texto — resolve o OUTRO para o nome que a oficina deu. */
+    public String localRotulo() {
+        if (local == null) {
+            return null;
+        }
+        return local.exigeDetalhe() && localDetalhe != null ? localDetalhe : local.getRotulo();
+    }
+
+    /** O que entrou: a descricao do veiculo ou, para peca avulsa, a do objeto. */
+    public String descricaoObjeto() {
+        return tipoObjeto == TipoObjeto.PECA ? objetoDescricao : veiculoDescricao;
+    }
+
+    /** Passou da previsao e ainda nao saiu. OS entregue ou cancelada nunca atrasa. */
+    public boolean atrasada() {
+        return previsaoEntrega != null
+                && !status.isFinal()
+                && Instant.now().isAfter(previsaoEntrega);
+    }
+
     public void transicionarPara(StatusOS destino, String autorId, String autorNome, String observacao) {
         if (destino == null) {
             throw new IllegalArgumentException("Status de destino obrigatorio");
@@ -252,6 +319,54 @@ public class OrdemServico {
 
     public void setKmEntrada(Integer kmEntrada) {
         this.kmEntrada = kmEntrada;
+    }
+
+    public TipoObjeto getTipoObjeto() {
+        return tipoObjeto;
+    }
+
+    public void setTipoObjeto(TipoObjeto tipoObjeto) {
+        this.tipoObjeto = tipoObjeto == null ? TipoObjeto.VEICULO : tipoObjeto;
+    }
+
+    public String getObjetoDescricao() {
+        return objetoDescricao;
+    }
+
+    public void setObjetoDescricao(String objetoDescricao) {
+        this.objetoDescricao = objetoDescricao;
+    }
+
+    public LocalOficina getLocal() {
+        return local;
+    }
+
+    public void setLocal(LocalOficina local) {
+        this.local = local;
+    }
+
+    public String getLocalDetalhe() {
+        return localDetalhe;
+    }
+
+    public void setLocalDetalhe(String localDetalhe) {
+        this.localDetalhe = localDetalhe;
+    }
+
+    public Instant getLocalDesde() {
+        return localDesde;
+    }
+
+    public void setLocalDesde(Instant localDesde) {
+        this.localDesde = localDesde;
+    }
+
+    public List<MovimentacaoLocal> getHistoricoLocal() {
+        return historicoLocal;
+    }
+
+    public void setHistoricoLocal(List<MovimentacaoLocal> historicoLocal) {
+        this.historicoLocal = historicoLocal == null ? new ArrayList<>() : historicoLocal;
     }
 
     public StatusOS getStatus() {

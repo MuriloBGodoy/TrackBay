@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { ordensApi, templatesApi } from '../api/recursos'
 import { useAuth } from '../auth/AuthContext'
+import { ControleLocal, EtiquetaPrazo } from '../components/ControleLocal'
 import { MotorCampos } from '../forms/MotorCampos'
 import {
   BarraAcao,
@@ -111,7 +112,10 @@ export function PaginaOrdemDetalhe() {
             </h1>
             <EtiquetaStatus status={os.status} />
           </div>
-          <p className="mt-1 text-sm text-tinta-500">Aberta em {dataHora(os.dataAbertura)}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-tinta-500">
+            Aberta em {dataHora(os.dataAbertura)}
+            <EtiquetaPrazo os={os} />
+          </p>
         </div>
       </div>
 
@@ -119,9 +123,21 @@ export function PaginaOrdemDetalhe() {
 
       <Cartao>
         <div className="flex items-center justify-between">
-          <div>
-            <p className="font-mono text-lg font-bold">{placaFormatada(os.veiculoPlaca)}</p>
-            <p className="text-sm text-tinta-600">{os.veiculoDescricao}</p>
+          <div className="min-w-0">
+            {/* Peca avulsa nao tem placa: quem identifica e a descricao do objeto. */}
+            {os.tipoObjeto === 'PECA' ? (
+              <>
+                <p className="font-display text-lg font-bold tracking-tight">
+                  {os.objetoDescricao}
+                </p>
+                <p className="text-sm text-tinta-600">Peça avulsa · sem veículo</p>
+              </>
+            ) : (
+              <>
+                <p className="font-mono text-lg font-bold">{placaFormatada(os.veiculoPlaca)}</p>
+                <p className="text-sm text-tinta-600">{os.veiculoDescricao}</p>
+              </>
+            )}
             <p className="mt-1 text-sm text-tinta-500">{os.clienteNome}</p>
           </div>
           {os.kmEntrada && (
@@ -132,6 +148,9 @@ export function PaginaOrdemDetalhe() {
           )}
         </div>
       </Cartao>
+
+      {/* Onde esta e ate quando — so enquanto o objeto ainda esta na oficina. */}
+      {os.status !== 'ENTREGUE' && os.status !== 'CANCELADA' && <ControleLocal os={os} />}
 
       {(os.reclamacaoCliente || os.diagnosticoTecnico) && (
         <Cartao className="space-y-3">

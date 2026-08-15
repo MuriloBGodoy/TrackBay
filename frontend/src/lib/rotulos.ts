@@ -10,24 +10,26 @@ import type {
   Cambio,
   Combustivel,
   FormaPagamento,
+  LocalOficina,
   OrigemPeca,
   Papel,
   Ramo,
   TipoMovimentacao,
+  TipoObjeto,
   TipoPessoa,
   TipoVeiculo,
 } from '../types/dominio'
 
 export const ROTULO_RAMO: Record<Ramo, string> = {
-  RADIADOR: 'Radiador',
   MECANICA_GERAL: 'Mecânica geral',
-  FUNILARIA_PINTURA: 'Funilaria e pintura',
-  ELETRICA: 'Elétrica',
   SUSPENSAO_FREIOS: 'Suspensão e freios',
-  AR_CONDICIONADO: 'Ar-condicionado',
   TROCA_OLEO: 'Troca de óleo',
-  PNEUS_ALINHAMENTO: 'Pneus e alinhamento',
   INJECAO_ELETRONICA: 'Injeção eletrônica',
+  ELETRICA: 'Elétrica',
+  AR_CONDICIONADO: 'Ar-condicionado',
+  PNEUS_ALINHAMENTO: 'Pneus e alinhamento',
+  FUNILARIA_PINTURA: 'Funilaria e pintura',
+  RADIADOR: 'Radiador',
   OUTRO: 'Outro',
 }
 
@@ -47,6 +49,30 @@ export const ROTULO_FORMA_PAGAMENTO: Record<FormaPagamento, string> = {
   TRANSFERENCIA: 'Transferência',
   FATURADO: 'Faturado',
   CHEQUE: 'Cheque',
+}
+
+export const ROTULO_LOCAL: Record<LocalOficina, string> = {
+  PATIO: 'Pátio',
+  BOX: 'Box',
+  ELEVADOR: 'Elevador',
+  DUCHA: 'Ducha',
+  TESTE: 'Em teste',
+  EXTERNO: 'Em terceiro',
+  OUTRO: 'Outro',
+}
+
+/**
+ * Onde o objeto está, em texto. Com OUTRO, quem manda é o nome que a oficina
+ * deu ao canto — é para isso que o campo livre existe.
+ */
+export function localRotulo(local?: LocalOficina, detalhe?: string): string {
+  if (!local) return '—'
+  return local === 'OUTRO' && detalhe ? detalhe : ROTULO_LOCAL[local]
+}
+
+export const ROTULO_TIPO_OBJETO: Record<TipoObjeto, string> = {
+  VEICULO: 'Veículo',
+  PECA: 'Peça avulsa',
 }
 
 export const ROTULO_TIPO_VEICULO: Record<TipoVeiculo, string> = {

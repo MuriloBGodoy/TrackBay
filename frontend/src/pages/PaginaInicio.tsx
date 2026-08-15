@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, CarProfile, Plus, Warning } from '@phosphor-icons/react'
+import { ArrowRight, CarProfile, Gear, MapPin, Plus, Warning } from '@phosphor-icons/react'
 import type { EChartsOption } from 'echarts'
 import { dashboardApi, ordensApi } from '../api/recursos'
 import { useAuth } from '../auth/AuthContext'
@@ -18,6 +18,7 @@ import {
 } from '../components/ui'
 import { EIXO_ROTULO, FONTE, FONTE_MONO, TINTA, TOOLTIP_BASE } from '../components/temaGrafico'
 import { moeda, placaFormatada } from '../lib/formato'
+import { localRotulo } from '../lib/rotulos'
 
 /*
  * O ECharts entra sob demanda: quem abre a landing ou o login nao paga por uma
@@ -99,7 +100,7 @@ export function PaginaInicio() {
     <div className="space-y-4">
       <CabecalhoPagina
         sobretitulo={`Olá, ${sessao?.usuario.nome?.split(' ')[0] ?? ''}`}
-        titulo={sessao?.oficina?.nomeFantasia ?? 'Track Wheel'}
+        titulo={sessao?.oficina?.nomeFantasia ?? 'Track Bay'}
         acoes={
           /* No desktop a barra do topo ja tem "Nova OS"; aqui so no celular. */
           <Link to="/app/ordens/nova" className="sm:hidden">
@@ -391,10 +392,22 @@ function OsPorStatus({ ordens }: { ordens?: OrdemServico[] }) {
  * Pátio
  * ------------------------------------------------------------------ */
 
+/**
+ * O patio, agrupado por lugar real.
+ *
+ * Antes desenhava uma grade de baias com rotulo inventado (A01, B02) a partir do
+ * indice na lista — bonito, mas mentia: a posicao nao correspondia a lugar
+ * nenhum da oficina. Agora cada grupo e um lugar de verdade, e o que a OS diz.
+ */
 function Patio({ abertas, className }: { abertas: OrdemServico[]; className?: string }) {
-  // Sempre desenha uma grade cheia: baias ocupadas primeiro, depois vagas livres.
-  const totalBaias = Math.max(12, Math.ceil((abertas.length + 2) / 4) * 4)
-  const baias = Array.from({ length: totalBaias }, (_, i) => abertas[i])
+  // Agrupa preservando a ordem do enum, com OUTRO desdobrado pelo nome do canto.
+  const grupos = new Map<string, OrdemServico[]>()
+  for (const os of abertas) {
+    const chave = localRotulo(os.local, os.localDetalhe)
+    const atual = grupos.get(chave)
+    if (atual) atual.push(os)
+    else grupos.set(chave, [os])
+  }
 
   return (
     <Cartao className={cx('p-4 sm:p-5', className)}>
@@ -404,8 +417,8 @@ function Patio({ abertas, className }: { abertas: OrdemServico[]; className?: st
             Pátio da oficina
           </h2>
           <p className="text-xs text-tinta-500">
-            {abertas.length}{' '}
-            {abertas.length === 1 ? 'carro em atendimento' : 'carros em atendimento'}
+            {abertas.length} {abertas.length === 1 ? 'em atendimento' : 'em atendimento'} ·{' '}
+            {grupos.size} {grupos.size === 1 ? 'lugar' : 'lugares'}
           </p>
         </div>
         <Link
@@ -427,9 +440,22 @@ function Patio({ abertas, className }: { abertas: OrdemServico[]; className?: st
           }
         />
       ) : (
-        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
-          {baias.map((os, i) => (
-            <Baia key={os?.id ?? `livre-${i}`} os={os} indice={i} />
+        <div className="space-y-4">
+          {[...grupos].map(([lugar, ordens]) => (
+            <div key={lugar}>
+              <div className="mb-2 flex items-baseline gap-2">
+                <h3 className="flex items-center gap-1 text-[11px] font-bold tracking-[0.14em] text-tinta-500 uppercase">
+                  <MapPin size={12} weight="fill" />
+                  {lugar}
+                </h3>
+                <span className="font-mono text-[11px] text-tinta-400">{ordens.length}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                {ordens.map((os) => (
+                  <Baia key={os.id} os={os} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -437,23 +463,11 @@ function Patio({ abertas, className }: { abertas: OrdemServico[]; className?: st
   )
 }
 
-/** Uma baia do pátio: ocupada (carro + placa + ponto de luz) ou livre. */
-function Baia({ os, indice }: { os?: OrdemServico; indice: number }) {
-  const rotulo = `${String.fromCharCode(65 + Math.floor(indice / 4))}${String((indice % 4) + 1).padStart(2, '0')}`
-
-  if (!os) {
-    return (
-      <div className="flex aspect-[4/3.4] flex-col justify-between rounded-2xl border border-dashed border-white/10 p-2.5">
-        <span className="font-mono text-[10px] font-bold tracking-wide text-tinta-400">
-          {rotulo}
-        </span>
-        <span className="text-center text-[11px] font-medium text-tinta-400">Livre</span>
-        <span />
-      </div>
-    )
-  }
-
+/** Um objeto no pátio: carro com placa, ou peça avulsa com a descrição. */
+function Baia({ os }: { os: OrdemServico }) {
   const emExecucao = os.status === 'EM_EXECUCAO'
+  const peca = os.tipoObjeto === 'PECA'
+
   return (
     <Link
       to={`/app/ordens/${os.id}`}
@@ -463,23 +477,40 @@ function Baia({ os, indice }: { os?: OrdemServico; indice: number }) {
           ? 'border-white/40 bg-white/[0.08] shadow-[var(--tk-glow)]'
           : 'border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]',
       )}
+      title={peca ? os.objetoDescricao : os.veiculoDescricao}
     >
       <div className="flex items-center justify-between">
         <span className="font-mono text-[10px] font-bold tracking-wide text-tinta-500">
-          {rotulo}
+          {os.numero.split('-')[1] ?? os.numero}
         </span>
         <span className={cx('size-2 rounded-full', LUZ_BAIA[os.status], emExecucao && 'tk-pulso')} />
       </div>
-      <CarProfile
-        size={30}
-        weight={emExecucao ? 'fill' : 'regular'}
+      {peca ? (
+        <Gear
+          size={30}
+          weight={emExecucao ? 'fill' : 'regular'}
+          className={cx(
+            'mx-auto',
+            emExecucao ? 'text-tinta-900' : 'text-tinta-500 group-hover:text-tinta-700',
+          )}
+        />
+      ) : (
+        <CarProfile
+          size={30}
+          weight={emExecucao ? 'fill' : 'regular'}
+          className={cx(
+            'mx-auto',
+            emExecucao ? 'text-tinta-900' : 'text-tinta-500 group-hover:text-tinta-700',
+          )}
+        />
+      )}
+      <span
         className={cx(
-          'mx-auto',
-          emExecucao ? 'text-tinta-900' : 'text-tinta-500 group-hover:text-tinta-700',
+          'truncate text-center text-[11px] font-bold text-tinta-900',
+          !peca && 'font-mono',
         )}
-      />
-      <span className="truncate text-center font-mono text-[11px] font-bold text-tinta-900">
-        {placaFormatada(os.veiculoPlaca)}
+      >
+        {peca ? os.objetoDescricao : placaFormatada(os.veiculoPlaca)}
       </span>
     </Link>
   )

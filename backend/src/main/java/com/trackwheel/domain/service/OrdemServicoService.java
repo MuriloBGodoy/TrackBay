@@ -2,12 +2,14 @@ package com.trackwheel.domain.service;
 
 import com.trackwheel.domain.model.Cliente;
 import com.trackwheel.domain.model.ItemPeca;
+import com.trackwheel.domain.model.LocalOficina;
 import com.trackwheel.domain.model.Oficina;
 import com.trackwheel.domain.model.OrdemServico;
 import com.trackwheel.domain.model.Ramo;
 import com.trackwheel.domain.model.StatusOS;
 import com.trackwheel.domain.model.TemplateCampos;
 import com.trackwheel.domain.model.TipoMovimentacao;
+import com.trackwheel.domain.model.TipoObjeto;
 import com.trackwheel.domain.model.Usuario;
 import com.trackwheel.domain.model.Veiculo;
 import com.trackwheel.domain.repository.ClienteRepository;
@@ -52,18 +54,30 @@ public class OrdemServicoService {
 
         Cliente cliente = clienteRepository.buscarPorId(oficinaId, os.getClienteId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente", os.getClienteId()));
-        Veiculo veiculo = veiculoRepository.buscarPorId(oficinaId, os.getVeiculoId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Veiculo", os.getVeiculoId()));
 
-        if (!veiculo.getClienteId().equals(cliente.getId())) {
-            throw new RegraNegocioException("O veiculo " + veiculo.getPlacaFormatada()
-                    + " nao pertence ao cliente " + cliente.getNome());
-        }
-
-        // Snapshot: a OS guarda como cliente e veiculo estavam no momento da abertura.
+        // Snapshot: a OS guarda como cliente e objeto estavam no momento da abertura.
         os.setClienteNome(cliente.getNome());
-        os.setVeiculoPlaca(veiculo.getPlaca());
-        os.setVeiculoDescricao(veiculo.descricaoCurta());
+
+        // Nem toda OS tem carro: peca avulsa entra so com a descricao do objeto.
+        Veiculo veiculo = null;
+        if (os.getTipoObjeto() == TipoObjeto.PECA) {
+            if (os.getObjetoDescricao() == null || os.getObjetoDescricao().isBlank()) {
+                throw new RegraNegocioException("Descreva a peca que entrou para manutencao");
+            }
+            os.setVeiculoId(null);
+            os.setVeiculoPlaca(null);
+            os.setVeiculoDescricao(null);
+        } else {
+            veiculo = veiculoRepository.buscarPorId(oficinaId, os.getVeiculoId())
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Veiculo", os.getVeiculoId()));
+            if (!veiculo.getClienteId().equals(cliente.getId())) {
+                throw new RegraNegocioException("O veiculo " + veiculo.getPlacaFormatada()
+                        + " nao pertence ao cliente " + cliente.getNome());
+            }
+            os.setVeiculoPlaca(veiculo.getPlaca());
+            os.setVeiculoDescricao(veiculo.descricaoCurta());
+            os.setObjetoDescricao(null);
+        }
 
         Oficina oficina = oficinaRepository.buscarPorId(oficinaId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Oficina", oficinaId));
@@ -95,10 +109,34 @@ public class OrdemServicoService {
             os.setTextoGarantia(oficina.getConfig().getTextoGarantiaPadrao());
         }
 
-        veiculo.atualizarKm(os.getKmEntrada());
-        veiculoRepository.salvar(veiculo);
+        if (veiculo != null) {
+            veiculo.atualizarKm(os.getKmEntrada());
+            veiculoRepository.salvar(veiculo);
+        }
+
+        // Chegou: por padrao esta no patio, e o relogio do lugar comeca agora.
+        if (os.getLocal() == null) {
+            os.setLocal(LocalOficina.PATIO);
+        }
+        os.setLocalDesde(Instant.now());
 
         os.getPagamento().recalcularStatus();
+        return repository.salvar(os);
+    }
+
+    /** Move o objeto de lugar dentro da oficina. O historico guarda quem moveu e quando. */
+    public OrdemServico moverLocal(String oficinaId, String id, LocalOficina destino,
+                                   String detalhe, Usuario autor) {
+        OrdemServico os = buscarOuFalhar(oficinaId, id);
+        if (os.getStatus().isFinal()) {
+            throw new RegraNegocioException("OS " + os.getNumero() + " esta " + os.getStatus()
+                    + " e nao esta mais na oficina");
+        }
+        try {
+            os.moverPara(destino, detalhe, autor.getId(), autor.getNome());
+        } catch (IllegalArgumentException e) {
+            throw new RegraNegocioException(e.getMessage());
+        }
         return repository.salvar(os);
     }
 
@@ -122,6 +160,9 @@ public class OrdemServicoService {
         os.setDescontoGeral(dados.getDescontoGeral());
         os.setAcrescimo(dados.getAcrescimo());
         os.setPrevisaoEntrega(dados.getPrevisaoEntrega());
+        if (os.getTipoObjeto() == TipoObjeto.PECA && dados.getObjetoDescricao() != null) {
+            os.setObjetoDescricao(dados.getObjetoDescricao());
+        }
         os.setCamposDinamicos(dados.getCamposDinamicos());
         os.setChecklistEntrada(dados.getChecklistEntrada());
         os.setGarantiaDias(dados.getGarantiaDias());

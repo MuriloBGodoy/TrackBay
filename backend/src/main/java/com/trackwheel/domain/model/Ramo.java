@@ -1,16 +1,23 @@
 package com.trackwheel.domain.model;
 
-/** Ramo de atuacao da oficina. Define o catalogo de campos dinamicos carregado nas OS. */
+/**
+ * Ramo de atuacao da oficina. Define o catalogo de campos dinamicos carregado nas OS.
+ *
+ * A ordem aqui e a ordem que o onboarding mostra (`GET /api/templates/ramos` usa
+ * `values()`), entao ela vai do mais comum para o mais especializado. Nenhum ramo
+ * e privilegiado no produto: o sistema atende oficina de qualquer especialidade.
+ * Persistencia e por `name()`, nunca por ordinal — reordenar aqui e seguro.
+ */
 public enum Ramo {
-    RADIADOR("Radiador"),
     MECANICA_GERAL("Mecanica geral"),
-    FUNILARIA_PINTURA("Funilaria e pintura"),
-    ELETRICA("Eletrica"),
     SUSPENSAO_FREIOS("Suspensao e freios"),
-    AR_CONDICIONADO("Ar-condicionado"),
     TROCA_OLEO("Troca de oleo"),
-    PNEUS_ALINHAMENTO("Pneus e alinhamento"),
     INJECAO_ELETRONICA("Injecao eletronica"),
+    ELETRICA("Eletrica"),
+    AR_CONDICIONADO("Ar-condicionado"),
+    PNEUS_ALINHAMENTO("Pneus e alinhamento"),
+    FUNILARIA_PINTURA("Funilaria e pintura"),
+    RADIADOR("Radiador"),
     OUTRO("Outro");
 
     private final String rotulo;

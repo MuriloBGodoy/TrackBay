@@ -12,8 +12,10 @@ import com.trackwheel.domain.model.OrigemPeca;
 import com.trackwheel.domain.model.Pagamento;
 import com.trackwheel.domain.model.Papel;
 import com.trackwheel.domain.model.Produto;
+import com.trackwheel.domain.model.LocalOficina;
 import com.trackwheel.domain.model.Ramo;
 import com.trackwheel.domain.model.StatusOS;
+import com.trackwheel.domain.model.TipoObjeto;
 import com.trackwheel.domain.model.TipoPessoa;
 import com.trackwheel.domain.model.TipoVeiculo;
 import com.trackwheel.domain.model.Usuario;
@@ -32,12 +34,14 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Popula o app no perfil dev com uma oficina de radiador ja funcional.
+ * Popula o app no perfil dev com uma oficina generica ja funcional.
  * O objetivo e abrir o front e ver o produto rodando sem cadastrar nada.
  */
 @Component
@@ -76,10 +80,12 @@ public class SeedDesenvolvimento implements CommandLineRunner {
         dono.setPapel(Papel.OWNER);
 
         Oficina oficina = new Oficina();
-        oficina.setNomeFantasia("Radiadores Track Wheel");
-        oficina.setRazaoSocial("Track Wheel Radiadores LTDA");
+        oficina.setNomeFantasia("Oficina Track Bay");
+        oficina.setRazaoSocial("Track Bay Servicos Automotivos LTDA");
         oficina.setCnpj("11222333000181");
-        oficina.setRamos(List.of(Ramo.RADIADOR, Ramo.MECANICA_GERAL));
+        // Oficina generica de proposito: o seed nao deve sugerir que o sistema e
+        // de um ramo so. Dois ramos ja provam o catalogo de campos trocando.
+        oficina.setRamos(List.of(Ramo.MECANICA_GERAL, Ramo.SUSPENSAO_FREIOS));
         oficina.setTelefone("1134567890");
         oficina.setWhatsapp("11987654321");
         oficina.setEmail(DevDados.EMAIL_DONO);
@@ -93,7 +99,7 @@ public class SeedDesenvolvimento implements CommandLineRunner {
         Usuario mecanico = new Usuario();
         mecanico.setUid("dev-uid-mecanico");
         mecanico.setNome("Joao (mecanico)");
-        mecanico.setEmail("joao@oficinatrackwheel.com.br");
+        mecanico.setEmail("joao@oficinatrackbay.com.br");
         mecanico.setPapel(Papel.MECHANIC);
         mecanico.setOficinaId(oficinaId);
         usuarioRepository.salvar(mecanico);
@@ -158,34 +164,34 @@ public class SeedDesenvolvimento implements CommandLineRunner {
         caminhao.setTipoVeiculo(TipoVeiculo.CAMINHAO);
         veiculoService.salvar(oficinaId, caminhao);
 
-        Produto colmeia = produto(oficinaId, "RAD-001", "7891234567895", "Colmeia de radiador Gol G5",
-                "Universal", "Radiador", "180.00", "320.00", "8", "2", "Prateleira A1");
-        Produto aditivo = produto(oficinaId, "ADT-002", "7891234567901", "Aditivo radiador rosa 1L",
-                "Paraflu", "Fluidos", "18.90", "39.90", "3", "5", "Prateleira B2");
-        produto(oficinaId, "MAN-003", "7891234567918", "Mangueira superior radiador",
-                "Cofap", "Radiador", "35.00", "79.90", "12", "4", "Prateleira A3");
+        Produto pastilha = produto(oficinaId, "FRE-001", "7891234567895", "Pastilha de freio dianteira Gol G5",
+                "Cobreq", "Freios", "88.00", "179.90", "8", "2", "Prateleira A1");
+        Produto oleo = produto(oficinaId, "OLE-002", "7891234567901", "Oleo motor 5W30 sintetico 1L",
+                "Mobil", "Fluidos", "28.90", "59.90", "3", "5", "Prateleira B2");
+        produto(oficinaId, "FIL-003", "7891234567918", "Filtro de oleo",
+                "Tecfil", "Filtros", "18.00", "42.90", "12", "4", "Prateleira A3");
 
+        // Duas OS de ramos diferentes de proposito: e o que mostra o catalogo de
+        // campos dinamicos trocando de cara entre uma OS e outra.
         OrdemServico os = new OrdemServico();
         os.setClienteId(pf.getId());
         os.setVeiculoId(gol.getId());
         os.setKmEntrada(98000);
-        os.setRamo(Ramo.RADIADOR);
-        os.setReclamacaoCliente("Carro esquentando no transito e perdendo agua.");
-        os.setDiagnosticoTecnico("Vazamento na colmeia e tampa com vedacao ruim.");
+        os.setRamo(Ramo.MECANICA_GERAL);
+        os.setReclamacaoCliente("Barulho de batida seca ao passar em lombada e revisao atrasada.");
+        os.setDiagnosticoTecnico("Coxim do amortecedor gasto. Revisao de 100 mil km pendente.");
         os.setCamposDinamicos(Map.of(
-                "tipo_radiador", "Aluminio/plastico",
-                "houve_superaquecimento", true,
-                "temperatura_atingida", 110,
-                "houve_vazamento", true,
-                "local_vazamento", "Colmeia",
-                "teste_pressao", 1.2,
-                "estado_tampa", "Vedacao ruim",
-                "servico_executado", List.of("Troca de colmeia", "Troca de tampa"),
-                "tipo_aditivo", "Organico (OAT) rosa"
+                "sistema_afetado", List.of("Suspensao", "Motor"),
+                "ruidos", List.of("Batida seca"),
+                "quando_ocorre", "Constante",
+                "revisao_preventiva", List.of("Oleo do motor", "Filtro de oleo", "Filtro de ar", "Velas"),
+                "fluidos_trocados", List.of("Oleo do motor"),
+                "km_proxima_revisao", 108000,
+                "observacoes_tecnicas", "Recomendado trocar o par de coxins na proxima revisao."
         ));
 
         ItemServico mao = new ItemServico();
-        mao.setDescricao("Remocao e instalacao do radiador");
+        mao.setDescricao("Revisao completa e troca de oleo");
         mao.setTipo("Mao de obra");
         mao.setValorUnitario(new BigDecimal("180.00"));
         mao.setQuantidade(BigDecimal.ONE);
@@ -194,14 +200,14 @@ public class SeedDesenvolvimento implements CommandLineRunner {
         os.getItensServico().add(mao);
 
         ItemServico teste = new ItemServico();
-        teste.setDescricao("Teste de pressao e estanqueidade");
+        teste.setDescricao("Diagnostico de ruido na suspensao");
         teste.setTipo("Diagnostico");
         teste.setValorUnitario(new BigDecimal("60.00"));
         teste.setQuantidade(BigDecimal.ONE);
         os.getItensServico().add(teste);
 
-        os.getItensPeca().add(itemPeca(colmeia, "1"));
-        os.getItensPeca().add(itemPeca(aditivo, "2"));
+        os.getItensPeca().add(itemPeca(pastilha, "1"));
+        os.getItensPeca().add(itemPeca(oleo, "2"));
 
         Pagamento.Parcela pix = new Pagamento.Parcela();
         pix.setForma(FormaPagamento.PIX);
@@ -215,26 +221,52 @@ public class SeedDesenvolvimento implements CommandLineRunner {
         os.getPagamento().getParcelas().add(pix);
         os.getPagamento().getParcelas().add(credito);
 
+        os.setPrevisaoEntrega(Instant.now().plus(1, ChronoUnit.DAYS));
+
         os = osService.criar(oficinaId, os, dono);
         osService.mudarStatus(oficinaId, os.getId(), StatusOS.APROVADA, "Cliente aprovou na hora", dono);
         osService.mudarStatus(oficinaId, os.getId(), StatusOS.EM_EXECUCAO, null, dono);
+        // Ja subiu na rampa: o patio da tela inicial mostra o lugar real.
+        osService.moverLocal(oficinaId, os.getId(), LocalOficina.ELEVADOR, null, dono);
 
         OrdemServico orcamento = new OrdemServico();
         orcamento.setClienteId(pj.getId());
         orcamento.setVeiculoId(caminhao.getId());
         orcamento.setKmEntrada(320000);
-        orcamento.setRamo(Ramo.RADIADOR);
-        orcamento.setReclamacaoCliente("Revisao preventiva do sistema de arrefecimento.");
+        orcamento.setRamo(Ramo.SUSPENSAO_FREIOS);
+        orcamento.setReclamacaoCliente("Freio com curso longo e pedal baixo na frota.");
         orcamento.setCamposDinamicos(Map.of(
-                "tipo_radiador", "Cobre/latao",
-                "servico_executado", List.of("Limpeza quimica")
+                "componente", List.of("Pastilha", "Disco", "Fluido de freio"),
+                "espessura_pastilha_dianteira", 3.2,
+                "estado_disco", "Sulcado",
+                "necessita_alinhamento", true
         ));
         ItemServico limpeza = new ItemServico();
-        limpeza.setDescricao("Limpeza quimica do radiador");
+        limpeza.setDescricao("Troca de pastilhas e retifica dos discos");
         limpeza.setValorUnitario(new BigDecimal("250.00"));
         limpeza.setQuantidade(BigDecimal.ONE);
         orcamento.getItensServico().add(limpeza);
         osService.criar(oficinaId, orcamento, dono);
+
+        // Terceira OS: peca que chegou sozinha, sem o carro. Prova que a OS nao
+        // depende de veiculo e que o patio sabe mostrar objeto sem placa.
+        OrdemServico avulsa = new OrdemServico();
+        avulsa.setTipoObjeto(TipoObjeto.PECA);
+        avulsa.setObjetoDescricao("Radiador Gol G5 (cliente trouxe so a peca)");
+        avulsa.setClienteId(pf.getId());
+        avulsa.setRamo(Ramo.MECANICA_GERAL);
+        avulsa.setReclamacaoCliente("Peca vazando pela colmeia.");
+        avulsa.setPrevisaoEntrega(Instant.now().plus(3, ChronoUnit.DAYS));
+        // sistema_afetado e obrigatorio no template de mecanica geral — vale para
+        // peca avulsa igual: o catalogo do ramo nao sabe se veio carro junto.
+        avulsa.setCamposDinamicos(Map.of("sistema_afetado", List.of("Arrefecimento")));
+        ItemServico reparo = new ItemServico();
+        reparo.setDescricao("Reparo e teste de estanqueidade");
+        reparo.setValorUnitario(new BigDecimal("180.00"));
+        reparo.setQuantidade(BigDecimal.ONE);
+        avulsa.getItensServico().add(reparo);
+        avulsa = osService.criar(oficinaId, avulsa, dono);
+        osService.moverLocal(oficinaId, avulsa.getId(), LocalOficina.OUTRO, "Bancada da funilaria", dono);
 
         log.info("=== Seed dev pronto ===");
         log.info("Oficina: {} (id {})", oficina.getNomeFantasia(), oficinaId);

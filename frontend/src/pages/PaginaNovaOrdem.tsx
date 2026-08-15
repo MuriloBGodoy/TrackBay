@@ -262,7 +262,7 @@ export function PaginaNovaOrdem() {
                 <Input
                   value={item.descricao}
                   onChange={(e) => mudarItem(i, { descricao: e.target.value })}
-                  placeholder="Ex.: Limpeza química do radiador"
+                  placeholder="Ex.: Troca de pastilhas de freio"
                 />
               </Campo>
               <div className="grid grid-cols-3 gap-2">

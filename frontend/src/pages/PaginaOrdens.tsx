@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ordensApi } from '../api/recursos'
-import { Plus } from '@phosphor-icons/react'
+import { MapPin, Plus } from '@phosphor-icons/react'
+import { EtiquetaPrazo } from '../components/ControleLocal'
 import {
   Botao,
   CabecalhoPagina,
@@ -15,7 +16,11 @@ import {
   cx,
 } from '../components/ui'
 import { moeda, placaFormatada, tempoRelativo } from '../lib/formato'
+import { localRotulo } from '../lib/rotulos'
 import type { StatusOS } from '../types/dominio'
+
+/** Saiu da oficina: nao faz sentido dizer onde esta. */
+const FINALIZADAS: StatusOS[] = ['ENTREGUE', 'CANCELADA']
 
 const FILTROS: (StatusOS | 'TODAS')[] = [
   'TODAS',
@@ -83,18 +88,36 @@ export function PaginaOrdens() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        {/* shrink-0: a placa nunca cede espaco, quem trunca e a descricao. */}
-                        <span className="shrink-0 font-mono text-sm font-bold">
-                          {placaFormatada(os.veiculoPlaca)}
-                        </span>
-                        <span className="truncate text-sm text-tinta-500">{os.veiculoDescricao}</span>
+                        {os.tipoObjeto === 'PECA' ? (
+                          /* Peca avulsa nao tem placa: a descricao ocupa a linha inteira. */
+                          <span className="truncate text-sm font-bold">{os.objetoDescricao}</span>
+                        ) : (
+                          <>
+                            {/* shrink-0: a placa nunca cede espaco, quem trunca e a descricao. */}
+                            <span className="shrink-0 font-mono text-sm font-bold">
+                              {placaFormatada(os.veiculoPlaca)}
+                            </span>
+                            <span className="truncate text-sm text-tinta-500">
+                              {os.veiculoDescricao}
+                            </span>
+                          </>
+                        )}
                       </div>
-                      <p className="mt-0.5 truncate text-sm text-tinta-600">
-                        {os.clienteNome}
+                      <p className="mt-0.5 truncate text-sm text-tinta-600">{os.clienteNome}</p>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-tinta-400">
+                        <span>
+                          {os.numero} · {tempoRelativo(os.dataAbertura)}
+                        </span>
+                        {os.local && !FINALIZADAS.includes(os.status) && (
+                          <span className="inline-flex items-center gap-1 text-tinta-500">
+                            <MapPin size={11} weight="fill" />
+                            {localRotulo(os.local, os.localDetalhe)}
+                          </span>
+                        )}
                       </p>
-                      <p className="mt-1 text-xs text-tinta-400">
-                        {os.numero} · {tempoRelativo(os.dataAbertura)}
-                      </p>
+                      <div className="mt-1.5">
+                        <EtiquetaPrazo os={os} />
+                      </div>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <EtiquetaStatus status={os.status} />

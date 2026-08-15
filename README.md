@@ -1,9 +1,10 @@
-# Track Wheel
+# Track Bay
 
 SaaS de gestão para oficinas mecânicas, vendido por assinatura.
 
 **O diferencial:** os campos do cadastro de serviço se adaptam ao ramo da oficina. Uma oficina de
-radiador vê campos de radiador; uma de suspensão vê os dela. O núcleo (cliente, veículo, OS,
+suspensão vê os campos dela; uma de funilaria vê os seus. Nenhum ramo é privilegiado — o sistema
+atende oficina de qualquer especialidade. O núcleo (cliente, veículo, OS,
 pagamento) é sempre o mesmo — o que muda é o **catálogo de campos dinâmicos**, versionado e salvo no
 banco, nunca hardcoded no front.
 
@@ -12,7 +13,7 @@ banco, nunca hardcoded no front.
 ## Rodar em 2 minutos
 
 Não precisa de conta no Firebase para começar. O projeto sobe em **modo dev**: dados em memória,
-autenticação simulada e uma oficina de radiador já populada.
+autenticação simulada e uma oficina já populada.
 
 ```bash
 # Terminal 1 — backend (http://localhost:8080)
@@ -37,17 +38,18 @@ npm run dev
 
 ### O que já vem populado no modo dev
 
-- Oficina **Radiadores Track Wheel** (ramos: RADIADOR + MECANICA_GERAL)
-- Usuários: `dono@oficinatrackwheel.com.br` (OWNER) e `joao@oficinatrackwheel.com.br` (MECHANIC)
+- Oficina **Oficina Track Bay** (ramos: MECANICA_GERAL + SUSPENSAO_FREIOS)
+- Usuários: `dono@oficinatrackbay.com.br` (OWNER) e `joao@oficinatrackbay.com.br` (MECHANIC)
 - Clientes: um PF (Carlos Souza) e um PJ frotista (Transportadora Rápida)
 - Veículos: **ABC-1234** (Gol) e **BRA2E19** (caminhão, placa Mercosul)
-- 3 produtos em estoque, 2 OS (uma em execução com pagamento dividido, um orçamento)
+- 3 produtos em estoque, 2 OS de **ramos diferentes** (mecânica geral em execução, com pagamento
+  dividido; orçamento de suspensão e freios) — é o catálogo de campos trocando de cara
 
 Para trocar de usuário no modo dev, mande o header `X-Dev-User` com o e-mail — útil para ver a
 regra do mecânico, que só enxerga as OS atribuídas a ele:
 
 ```bash
-curl -H "X-Dev-User: joao@oficinatrackwheel.com.br" http://localhost:8080/api/ordens
+curl -H "X-Dev-User: joao@oficinatrackbay.com.br" http://localhost:8080/api/ordens
 ```
 
 ---
@@ -110,7 +112,7 @@ frontend/src/
 ├── components/   UI reutilizável — Marca, AppShell, Grafico, ui.tsx
 ├── forms/        motor de renderização dos campos dinâmicos
 ├── lib/          formatação pt-BR (R$, dd/MM/yyyy, máscaras) e rótulos dos enums
-├── pages/        telas (PaginaHome é a landing pública)
+├── pages/        telas (PaginaHome e PaginaComoFunciona são a vitrine pública)
 └── types/        espelho do domínio do backend
 ```
 
@@ -119,15 +121,23 @@ frontend/src/
 A vitrine pública e o produto vivem em endereços separados: `/` carrega sem
 sessão nenhuma e o app inteiro mora sob `/app`, atrás da guarda de rota.
 
+A vitrine é **duas páginas de propósito**. O produto é por assinatura, então a
+home não precisa convencer estranho — precisa deixar quem já assinou entrar
+rápido. Ela ficou com a marca, seis cartões do que a plataforma faz e o botão de
+entrar em três lugares; o argumento longo foi para `/como-funciona`, fora do
+pacote inicial. As duas dividem barra, rodapé e moldura de seção
+(`components/site.tsx`).
+
 | Rota                | O quê                                                     |
 | ------------------- | --------------------------------------------------------- |
-| `/`                 | Landing pública — hero, o diferencial dos campos dinâmicos |
+| `/`                 | Home — marca, o que a plataforma faz e o caminho para entrar |
+| `/como-funciona`    | O aprofundamento: campos por ramo, fluxo da OS, ramos, números |
 | `/login`            | Entrar com Google (no modo dev cai direto no painel)       |
 | `/onboarding`       | Cadastro da oficina e escolha do ramo                      |
 | `/app`              | Painel: indicadores, gráficos, pátio e OS em atendimento   |
 | `/app/ordens`       | Lista de OS, `/app/ordens/nova` e `/app/ordens/:id`        |
 | `/app/clientes`     | Clientes PF/PJ                                             |
-| `/app/veiculos`     | Busca por placa e histórico do veículo                     |
+| `/app/veiculos`     | Cadastro, busca por placa e histórico do veículo           |
 | `/app/estoque`      | Produtos e movimentações                                   |
 | `/app/agenda`       | Agendamentos do dia                                        |
 | `/app/config`       | Oficina, catálogo de campos por ramo e equipe              |
@@ -137,11 +147,29 @@ baixa sob demanda.
 
 ### Marca
 
-O símbolo é vetorial (`components/Marca.tsx`) e a mesma geometria está em
-`public/icone.svg` e nos PNGs do PWA — se um mudar, mude os outros. O letreiro
-"TRACK WHEEL" em pincel foi recortado da arte original do logo e passado para
-branco com transparência, então ele mantém a textura da pincelada sobre o
-grafite.
+O nome e o desenho dizem a mesma coisa: a **baia**, o box onde o carro entra
+para ser atendido. O símbolo é o pórtico visto de frente — placa de grafite,
+arco de metal e o veículo lá dentro, com o piso acendendo por baixo. Nada gira:
+no herói da landing quem se move é a luz dos anéis, não a marca.
+
+A marca tem **duas peças, uma para cada tamanho** (`components/Marca.tsx`):
+
+- `MarcaArte` — a arte oficial (chaves cruzadas, pneu e o letreiro). Vai onde há
+  espaço: herói da landing e painel do login. É raster e cheia de detalhe, então
+  não desce abaixo de ~150px de largura.
+- `MarcaSimbolo` — o pórtico da baia, vetorial. É o que sobrevive a 32px: barra
+  lateral, cabeçalho, favicon e ícone do PWA.
+
+A arte original é `trackbaylogo.png`, na raiz: escura sobre cinza claro, com o
+terço de baixo borrado. O asset do app (`src/assets/logo-trackbay.webp`) é ela
+recortada, com o fundo removido pela distância de cor e a **luminância
+invertida** — sem inverter, o letreiro quase preto sumiria no grafite. Se a arte
+for refeita, é esse o caminho a repetir.
+
+A geometria do símbolo está também em `public/icone.svg` e nos PNGs do PWA — se
+um mudar, mude os outros. O `icone.svg` é **sem texto de propósito**: os PNGs do
+manifesto são renderizados a partir dele fora do navegador, onde webfont não
+carrega.
 
 ### Multi-tenant
 
@@ -182,7 +210,9 @@ O schema de formulário fica **no banco**, versionado, e o front renderiza a par
 - **Versionamento:** editar um template cria uma versão nova. A OS guarda `schemaVersion`, então OS
   antigas continuam renderizando exatamente o formulário com que foram preenchidas
 
-Veja funcionando: `GET /api/templates/RADIADOR` → 15 campos, 2 deles condicionais.
+Veja funcionando: `GET /api/templates/MECANICA_GERAL` → 8 campos. O catálogo mais longo é o de
+radiador (15 campos, 2 condicionais), mas cada template só é semeado para a oficina que escolheu
+aquele ramo — o modo dev sobe com mecânica geral e suspensão.
 
 ---
 
